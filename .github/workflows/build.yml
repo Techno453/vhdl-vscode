@@ -60,7 +60,7 @@ jobs:
             cargo build --release --locked -p vhdl_ls --manifest-path rust_hdl/Cargo.toml --target $target
           done
           lipo -create -output vhdl_ls rust_hdl/target/{aarch64,x86_64}-apple-darwin/release/vhdl_ls
-          echo "SERVER=vhdl_ls" >> "$GITHUB_ENV"
+          echo "SERVER=./vhdl_ls" >> "$GITHUB_ENV"
 
       - name: Smoke test
         run: $SERVER --version
