@@ -1,0 +1,91 @@
+# Builds the VHDL LS server from the rust_hdl fork for Windows and macOS and packages
+# the bundles. Pushes to main upload them as workflow artifacts; tags (v*) also publish
+# them as a GitHub release.
+name: Build
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+  workflow_dispatch:
+
+env:
+  RUST_HDL_REPO: Techno453/rust_hdl
+  RUST_HDL_REF: error-recovery
+
+jobs:
+  bundle:
+    strategy:
+      matrix:
+        include:
+          - platform: windows
+            os: windows-latest
+          - platform: mac
+            os: macos-latest
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/checkout@v4
+        with:
+          repository: ${{ env.RUST_HDL_REPO }}
+          ref: ${{ env.RUST_HDL_REF }}
+          path: rust_hdl
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.platform == 'mac' && 'aarch64-apple-darwin,x86_64-apple-darwin' || 'x86_64-pc-windows-msvc' }}
+
+      - name: Build for Windows
+        if: matrix.platform == 'windows'
+        # Static C runtime, so the server runs without the Visual C++ Redistributable
+        env:
+          RUSTFLAGS: -C target-feature=+crt-static
+        run: |
+          cargo build --release --locked -p vhdl_ls --manifest-path rust_hdl/Cargo.toml --target x86_64-pc-windows-msvc
+          echo "SERVER=rust_hdl/target/x86_64-pc-windows-msvc/release/vhdl_ls.exe" >> "$GITHUB_ENV"
+
+      - name: Build for macOS (Apple Silicon and Intel)
+        if: matrix.platform == 'mac'
+        run: |
+          for target in aarch64-apple-darwin x86_64-apple-darwin; do
+            cargo build --release --locked -p vhdl_ls --manifest-path rust_hdl/Cargo.toml --target $target
+          done
+          lipo -create -output vhdl_ls rust_hdl/target/{aarch64,x86_64}-apple-darwin/release/vhdl_ls
+          echo "SERVER=vhdl_ls" >> "$GITHUB_ENV"
+
+      - name: Smoke test
+        run: $SERVER --version
+
+      - name: Bundle
+        run: python bundle.py ${{ matrix.platform }} "$SERVER" rust_hdl
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: vhdl-vscode-${{ matrix.platform }}
+          path: dist/vhdl-vscode-${{ matrix.platform }}.zip
+
+  release:
+    needs: bundle
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+
+      - name: Publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" dist/*.zip --repo "$GITHUB_REPOSITORY" --title "$GITHUB_REF_NAME" --generate-notes

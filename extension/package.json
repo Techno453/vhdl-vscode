@@ -2,11 +2,11 @@
 	"name": "fpga-tools",
 	"displayName": "FPGA Tools",
 	"description": "Buttons to simulate, build and program FPGA designs with the Vivado container from vivado-on-silicon-mac",
-	"version": "0.4.1",
+	"version": "0.5.0",
 	"publisher": "techno453",
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/Techno453/vivado-on-silicon-mac"
+		"url": "https://github.com/Techno453/vhdl-vscode"
 	},
 	"engines": {
 		"vscode": "^1.80.0"
@@ -44,9 +44,7 @@
 					"items": {
 						"type": "string"
 					},
-					"default": [
-						"~/Desktop/Code Work/School/AdvDigitalDesign"
-					],
+					"default": [],
 					"description": "Show the FPGA buttons only in workspaces inside these folders. Empty shows them everywhere."
 				}
 			}

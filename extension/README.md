@@ -7,7 +7,7 @@ Buttons for the `fpga` command of [vivado-on-silicon-mac](https://github.com/Tec
 - **FPGA sidebar:** all actions, including the Vivado GUI and starting or stopping the container
 - **Shortcuts:** Ctrl+Alt+S simulate, Ctrl+Alt+B build, Ctrl+Alt+P program
 
-The buttons only appear in the folders listed in `fpgaTools.projectFolders` (by default `~/Desktop/Code Work/School/AdvDigitalDesign`). In a repository with several labs, each action uses the lab folder with the Vivado project (.xpr) that contains the open file; for files outside of a lab, it asks for the lab. Simulations of Vivado projects use the project's sources, IP cores and testbench.
+The extension only works on macOS. The buttons only appear in the folders listed in `fpgaTools.projectFolders` (all folders if empty, the default). In a repository with several labs, each action uses the lab folder with the Vivado project (.xpr) that contains the open file; for files outside of a lab, it asks for the lab. Simulations of Vivado projects use the project's sources, IP cores and testbench.
 
 Builds and simulations show their current step (e.g. Synthesizing, Placing, Routing) in a progress notification with a Cancel button. Builds only rerun what is out of date.
 
@@ -15,4 +15,4 @@ Errors from Vivado appear in the Problems panel and link to the source line. The
 
 Waveforms open in the [Surfer](https://marketplace.visualstudio.com/items?itemName=surfer-project.surfer) extension if it is installed.
 
-Build the extension with `python3 build_vsix.py` and install it with `code --install-extension fpga-tools-<version>.vsix`.
+It's part of the macOS bundle of [vhdl-vscode](https://github.com/Techno453/vhdl-vscode). To build it yourself: `python3 build_vsix.py`, then `code --install-extension fpga-tools-<version>.vsix`.

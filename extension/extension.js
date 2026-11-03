@@ -530,6 +530,11 @@ class ActionsProvider {
 }
 
 function activate(extensionContext) {
+	// The fpga command and the Vivado container only exist on macOS. Elsewhere the
+	// fpgaTools.enabled context stays unset, which hides all buttons and commands.
+	if (process.platform !== "darwin") {
+		return;
+	}
 	context = extensionContext;
 	const commands = {
 		"fpgaTools.simulate": simulate,
