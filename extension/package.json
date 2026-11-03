@@ -1,0 +1,234 @@
+{
+	"name": "fpga-tools",
+	"displayName": "FPGA Tools",
+	"description": "Buttons to simulate, build and program FPGA designs with the Vivado container from vivado-on-silicon-mac",
+	"version": "0.4.1",
+	"publisher": "techno453",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/Techno453/vivado-on-silicon-mac"
+	},
+	"engines": {
+		"vscode": "^1.80.0"
+	},
+	"categories": [
+		"Other"
+	],
+	"main": "./extension.js",
+	"activationEvents": [
+		"workspaceContains:**/*.{vhd,vhdl,v,sv,xpr}",
+		"onView:fpgaTools.actions"
+	],
+	"contributes": {
+		"configuration": {
+			"title": "FPGA Tools",
+			"properties": {
+				"fpgaTools.toolsFolder": {
+					"type": "string",
+					"default": "~/Desktop/vivado-on-silicon-mac",
+					"description": "Folder of vivado-on-silicon-mac, which contains bin/fpga."
+				},
+				"fpgaTools.part": {
+					"type": "string",
+					"default": "",
+					"description": "FPGA part for builds without a Vivado project. Empty uses xc7z010clg400-1."
+				},
+				"fpgaTools.autoStopMinutes": {
+					"type": "number",
+					"default": 10,
+					"minimum": 0,
+					"description": "Stop the Vivado container after this many idle minutes (no FPGA action and no container running). 0 keeps it running."
+				},
+				"fpgaTools.projectFolders": {
+					"type": "array",
+					"items": {
+						"type": "string"
+					},
+					"default": [
+						"~/Desktop/Code Work/School/AdvDigitalDesign"
+					],
+					"description": "Show the FPGA buttons only in workspaces inside these folders. Empty shows them everywhere."
+				}
+			}
+		},
+		"commands": [
+			{
+				"command": "fpgaTools.simulate",
+				"title": "Simulate Testbench",
+				"category": "FPGA",
+				"icon": "$(play)"
+			},
+			{
+				"command": "fpgaTools.build",
+				"title": "Build Bitstream",
+				"category": "FPGA",
+				"icon": "$(tools)"
+			},
+			{
+				"command": "fpgaTools.program",
+				"title": "Program Board",
+				"category": "FPGA",
+				"icon": "$(zap)"
+			},
+			{
+				"command": "fpgaTools.openWaveform",
+				"title": "Open Last Waveform",
+				"category": "FPGA",
+				"icon": "$(pulse)"
+			},
+			{
+				"command": "fpgaTools.openGui",
+				"title": "Open Vivado GUI",
+				"category": "FPGA",
+				"icon": "$(window)"
+			},
+			{
+				"command": "fpgaTools.init",
+				"title": "Set Up Project Folder",
+				"category": "FPGA",
+				"icon": "$(gear)"
+			},
+			{
+				"command": "fpgaTools.startContainer",
+				"title": "Start Container",
+				"category": "FPGA",
+				"icon": "$(vm-outline)"
+			},
+			{
+				"command": "fpgaTools.stopContainer",
+				"title": "Stop Container",
+				"category": "FPGA",
+				"icon": "$(vm-running)"
+			},
+			{
+				"command": "fpgaTools.toggleContainer",
+				"title": "Start or Stop Container",
+				"category": "FPGA"
+			}
+		],
+		"menus": {
+			"editor/title": [
+				{
+					"command": "fpgaTools.simulate",
+					"when": "resourceExtname =~ /^\\.(vhdl?|s?v)$/ && fpgaTools.enabled",
+					"group": "navigation"
+				}
+			],
+			"commandPalette": [
+				{
+					"command": "fpgaTools.simulate",
+					"when": "fpgaTools.enabled"
+				},
+				{
+					"command": "fpgaTools.build",
+					"when": "fpgaTools.enabled"
+				},
+				{
+					"command": "fpgaTools.program",
+					"when": "fpgaTools.enabled"
+				},
+				{
+					"command": "fpgaTools.openWaveform",
+					"when": "fpgaTools.enabled"
+				},
+				{
+					"command": "fpgaTools.openGui",
+					"when": "fpgaTools.enabled"
+				},
+				{
+					"command": "fpgaTools.init",
+					"when": "fpgaTools.enabled"
+				},
+				{
+					"command": "fpgaTools.startContainer",
+					"when": "fpgaTools.enabled"
+				},
+				{
+					"command": "fpgaTools.stopContainer",
+					"when": "fpgaTools.enabled"
+				},
+				{
+					"command": "fpgaTools.toggleContainer",
+					"when": "fpgaTools.enabled"
+				}
+			]
+		},
+		"keybindings": [
+			{
+				"command": "fpgaTools.simulate",
+				"key": "ctrl+alt+s",
+				"when": "fpgaTools.enabled"
+			},
+			{
+				"command": "fpgaTools.build",
+				"key": "ctrl+alt+b",
+				"when": "fpgaTools.enabled"
+			},
+			{
+				"command": "fpgaTools.program",
+				"key": "ctrl+alt+p",
+				"when": "fpgaTools.enabled"
+			}
+		],
+		"viewsContainers": {
+			"activitybar": [
+				{
+					"id": "fpgaTools",
+					"title": "FPGA",
+					"icon": "media/chip.svg"
+				}
+			]
+		},
+		"views": {
+			"fpgaTools": [
+				{
+					"id": "fpgaTools.actions",
+					"name": "Actions",
+					"when": "fpgaTools.enabled"
+				}
+			]
+		},
+		"taskDefinitions": [
+			{
+				"type": "fpgaTools",
+				"required": [
+					"action"
+				],
+				"properties": {
+					"action": {
+						"type": "string",
+						"description": "The fpga command to run"
+					}
+				}
+			}
+		],
+		"problemMatchers": [
+			{
+				"name": "vivado",
+				"owner": "vivado",
+				"fileLocation": "absolute",
+				"pattern": {
+					"regexp": "^(ERROR|WARNING): \\[([^\\]]+)\\] (.*) \\[(.+):(\\d+)\\]$",
+					"severity": 1,
+					"code": 2,
+					"message": 3,
+					"file": 4,
+					"line": 5
+				}
+			},
+			{
+				"name": "vivado-critical",
+				"owner": "vivado",
+				"fileLocation": "absolute",
+				"severity": "warning",
+				"pattern": {
+					"regexp": "^CRITICAL WARNING: \\[([^\\]]+)\\] (.*) \\[(.+):(\\d+)\\]$",
+					"code": 1,
+					"message": 2,
+					"file": 3,
+					"line": 4
+				}
+			}
+		]
+	}
+}
